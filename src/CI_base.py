@@ -16,6 +16,7 @@ from scipy.stats import laplace
 from CCIT import *
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import scale
 
 torch.manual_seed(11)
 
@@ -41,7 +42,7 @@ class CI_base(object):
     dim_N: dimension of noise when GAN, if None then set to dim_z + 1, can be set to a moderate value like 20
     noise: Type of noise for regression mimic function 'Laplace' or 'Normal' or 'Mixture'
     perc: percentage of mixture Normal for noise type 'Mixture'
-    normalized: Normalize data-set or not: recommended True for GAN False for regression
+    normalized: Normalize data-set or not
     '''
     def __init__(self,X,Y,Z,max_depths = [6,10,13], n_estimators=[100,200,300], colsample_bytrees=[0.8],nfold = 5,train_samp = -1,nthread = 4,max_epoch=100,bsize=50,dim_N = None, noise = 'Laplace',perc = 0.3, normalized = True):
         self.X = X
@@ -96,5 +97,6 @@ class CI_base(object):
         AUC2 = roc_auc_score(Ytest,pred[:,1])
         del gbm
         x = [0.0, AUC1 - AUC2 , AUC2 - 0.5, acc1 - acc2, acc2 - 0.5]
-        sigma = 2.0/np.sqrt(self.nx)
+        y = max(x[1],x[3])
+        sigma = 1.0/np.sqrt(self.nx)
         return pvalue(x[1],sigma)

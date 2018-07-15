@@ -16,6 +16,7 @@ from scipy.stats import laplace
 from CCIT import *
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import scale
 
 torch.manual_seed(11)
 
@@ -84,6 +85,8 @@ def train_conditional_gan_original(data,dim_N,dim_X,dim_Y,dim_Z, max_epoch, BSIZ
     n = data.shape[0]
     max_iter = max_epoch*n/BSIZE + 1
     print 'MAX ITER: ' + str(max_iter)
+    print 'in train GAN',
+    print normalized
     Data = data_iterator(dx=dim_X,dy=dim_Y,dz=dim_Z,sType = 'CI',size = 10000,bsize = BSIZE,nstd = 0.5,fixed_z = False,data = data,normalized=normalized)
     netG = Generator(dim_N,dim_Y,dim_Z,dim_Z+dim_N)
     netD = Discriminator_original(dim_X,dim_Y,dim_Z,dim_Z+dim_Y)
@@ -184,13 +187,15 @@ def CI_sampler_conditional_CGAN(X_in,Y_in,Z_in,param_dict):
     np.random.seed(11)
     nx,dx = X_in.shape
     ny,dy = Y_in.shape
-    ny,dz = Z_in.shape 
+    nz,dz = Z_in.shape 
     train_len = param_dict['train_len'] #-1
     max_epoch = param_dict['max_epoch']
     BSIZE = param_dict['BSIZE']
     option = param_dict['option'] #1
     dim_N = param_dict['dim_N']
     normalized = param_dict['normalized']
+    print 'in CI Sampler', 
+    print normalized
     samples = np.hstack([X_in,Y_in,Z_in]).astype(np.float32)
 
     if train_len == -1:
@@ -208,7 +213,7 @@ def CI_sampler_conditional_CGAN(X_in,Y_in,Z_in,param_dict):
         dim_N = dim_N
     else:
         dim_N = dz + 1
-    netG, netD = train_conditional_gan_original(data1,dim_N,dx,dy,dz, max_epoch, BSIZE,normalized)
+    netG, netD = train_conditional_gan_original(data1,dim_N,dx,dy,dz, max_epoch, BSIZE,1 , normalized)
 
     n2,m2 = data2.shape
     ntest = Variable(torch.randn(n2,1,dim_N))
@@ -256,7 +261,7 @@ def CI_sampler_conditional_CGAN(X_in,Y_in,Z_in,param_dict):
 
 class MIMIFY_GAN(CI_base):
     def __init__(self,X,Y,Z,max_depths = [6,10,13], n_estimators=[100,200,300], colsample_bytrees=[0.8],nfold = 5,train_samp = -1,nthread = 4,max_epoch=100,bsize=50,dim_N = None, noise = 'Laplace',perc = 0.3, normalized = True):
-        super(MIMIFY_GAN, self).__init__(X,Y,Z,max_depths = [6,10,13], n_estimators=[100,200,300], colsample_bytrees=[0.8],nfold = 5,train_samp = -1,nthread = 4,max_epoch=100,bsize=50,dim_N = None, noise = 'Laplace',perc = 0.3, normalized = True)
+        super(MIMIFY_GAN, self).__init__(X,Y,Z,max_depths , n_estimators, colsample_bytrees,nfold,train_samp,nthread ,max_epoch,bsize,dim_N, noise ,perc , normalized )
         self.param_dict = {}
         self.param_dict['train_len'] = self.train_samp
         self.param_dict['max_epoch'] = self.max_epoch

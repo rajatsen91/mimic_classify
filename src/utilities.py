@@ -16,6 +16,7 @@ from scipy.stats import laplace
 from CCIT import *
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.neighbors import KNeighborsClassifier
+from sklearn.preprocessing import scale
 
 
 def pvalue(x,sigma):
@@ -35,7 +36,7 @@ def weights_init(m):
 
 class data_iterator(object):
     '''Data Iterator class for testing and supplying batched data '''
-    def __init__(self,dx,dy,dz,sType = 'CI',size = 10000,bsize = 50,nstd = 0.5,fixed_z = False,data = None,channel = 1,normalized = True):
+    def __init__(self,dx,dy,dz,sType = 'CI',size = 10000,bsize = 50,nstd = 0.5,fixed_z = False,data = None,channel = 1,normalized = False ):
         if data is not None:
             self.dataset = data
         else:
@@ -71,8 +72,9 @@ class data_iterator(object):
                 X = np.random.multivariate_normal(np.zeros(dx),np.eye(dx),size)
                 Y = 2*X*Axy + Z*Ay + nstd*np.random.multivariate_normal(np.zeros(dy),np.eye(dy),size)
             self.dataset = np.array(np.hstack([X,Y,Z])).astype(np.float32)
+        #print normalized
         if normalized is True:
-            self.dataset = scale(self.dataset,axis = 0)
+            self.dataset = scale(self.dataset,axis = 0,with_mean = False)
             print 'Std. Normalized Dataset'
         s = self.dataset.shape
         self.index = 0
