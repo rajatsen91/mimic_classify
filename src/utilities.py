@@ -21,6 +21,7 @@ from sklearn.neighbors import KNeighborsClassifier
 def pvalue(x,sigma):
 
     return 0.5*erfc(x/(sigma*np.sqrt(2)))
+
 def weights_init(m):
     '''Custom weights initialization (from WGAN pytorch code)'''
     classname = m.__class__.__name__

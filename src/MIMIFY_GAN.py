@@ -20,8 +20,9 @@ from sklearn.neighbors import KNeighborsClassifier
 torch.manual_seed(11)
 
 
-use_cuda = True
+use_cuda = False
 CRITIC_ITERS = 5
+FIXED_GENERATOR = False
 
 from utilities import *
 from CI_base import *
@@ -181,6 +182,9 @@ def train_conditional_gan_original(data,dim_N,dim_X,dim_Y,dim_Z, max_epoch, BSIZ
 
 def CI_sampler_conditional_CGAN(X_in,Y_in,Z_in,param_dict):
     np.random.seed(11)
+    nx,dx = X_in.shape
+    ny,dy = Y_in.shape
+    ny,dz = Z_in.shape 
     train_len = param_dict['train_len'] #-1
     max_epoch = param_dict['max_epoch']
     BSIZE = param_dict['BSIZE']
@@ -204,7 +208,7 @@ def CI_sampler_conditional_CGAN(X_in,Y_in,Z_in,param_dict):
         dim_N = dim_N
     else:
         dim_N = dz + 1
-    netG, netD = train_conditional_gan_simple(data1,dim_N,dx,dy,dz, max_epoch, BSIZE,normalized)
+    netG, netD = train_conditional_gan_original(data1,dim_N,dx,dy,dz, max_epoch, BSIZE,normalized)
 
     n2,m2 = data2.shape
     ntest = Variable(torch.randn(n2,1,dim_N))
@@ -246,21 +250,21 @@ def CI_sampler_conditional_CGAN(X_in,Y_in,Z_in,param_dict):
     Xtest = Xdata[train_len::,:]
     Ytest = Ydata[train_len::]
 
-    return Xtrain,Ytrain,Xtest,Ytest,netG,netD
+    return Xtrain,Ytrain,Xtest,Ytest
 
 
 
 class MIMIFY_GAN(CI_base):
-	def __init__(self,X,Y,Z,max_depths = [6,10,13], n_estimators=[100,200,300], colsample_bytrees=[0.8],nfold = 5,train_samp = -1,nthread = 4,max_epoch=100,bsize=50,dim_N = None, noise = 'Laplace',perc = 0.3, normalized = True):
-		super(MIMIFY_GAN, self).__init__(X,Y,Z,max_depths = [6,10,13], n_estimators=[100,200,300], colsample_bytrees=[0.8],nfold = 5,train_samp = -1,nthread = 4,max_epoch=100,bsize=50,dim_N = None, noise = 'Laplace',perc = 0.3, normalized = True)
-		self.param_dict = {}
-		param_dict['train_len'] = self.train_samp
-    	param_dict['max_epoch'] = self.max_epoch
-    	param_dict['BSIZE'] = self.bsize
-    	param_dict['option'] = 1
-  		param_dict['dim_N'] = self.dim_N
-  		param_dict['normalized'] = self.normalized
-  		self.mimic_sampler = CI_sampler_conditional_CGAN
+    def __init__(self,X,Y,Z,max_depths = [6,10,13], n_estimators=[100,200,300], colsample_bytrees=[0.8],nfold = 5,train_samp = -1,nthread = 4,max_epoch=100,bsize=50,dim_N = None, noise = 'Laplace',perc = 0.3, normalized = True):
+        super(MIMIFY_GAN, self).__init__(X,Y,Z,max_depths = [6,10,13], n_estimators=[100,200,300], colsample_bytrees=[0.8],nfold = 5,train_samp = -1,nthread = 4,max_epoch=100,bsize=50,dim_N = None, noise = 'Laplace',perc = 0.3, normalized = True)
+        self.param_dict = {}
+        self.param_dict['train_len'] = self.train_samp
+        self.param_dict['max_epoch'] = self.max_epoch
+        self.param_dict['BSIZE'] = self.bsize
+        self.param_dict['option'] = 1
+        self.param_dict['dim_N'] = self.dim_N
+        self.param_dict['normalized'] = self.normalized
+        self.mimic_sampler = CI_sampler_conditional_CGAN
 
 
 
