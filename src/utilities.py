@@ -3,6 +3,8 @@ import random
 import numpy as np
 import sklearn.datasets
 
+from scipy.stats import norm
+
 import torch
 import torch.autograd as autograd
 import torch.nn as nn
@@ -20,8 +22,7 @@ from sklearn.preprocessing import scale
 
 
 def pvalue(x,sigma):
-
-    return 0.5*erfc(x/(sigma*np.sqrt(2)))
+    return 1.0 - norm.cdf(x/sigma)
 
 def weights_init(m):
     '''Custom weights initialization (from WGAN pytorch code)'''

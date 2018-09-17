@@ -3,6 +3,8 @@ import random
 import numpy as np
 import sklearn.datasets
 
+from scipy.stats import norm
+
 import torch
 import torch.autograd as autograd
 import torch.nn as nn
@@ -97,6 +99,8 @@ class CI_base(object):
         AUC2 = roc_auc_score(Ytest,pred[:,1])
         del gbm
         x = [0.0, AUC1 - AUC2 , AUC2 - 0.5, acc1 - acc2, acc2 - 0.5]
+        print 'AC_w_x: ' + str(AUC1),
+        print 'AC_no_x: ' + str(AUC2)
         y = max(x[1],x[3])
         sigma = 1.0/np.sqrt(self.nx)
-        return pvalue(x[1],sigma)
+        return pvalue(max(x[1],0.0),sigma)
