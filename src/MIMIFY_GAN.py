@@ -198,6 +198,11 @@ def CI_sampler_conditional_CGAN(X_in,Y_in,Z_in,param_dict):
     print normalized
     samples = np.hstack([X_in,Y_in,Z_in]).astype(np.float32)
 
+    if normalized:
+        X_in = scale(X_in,axis = 0,with_mean = False)
+        Y_in = scale(Y_in,axis = 0,with_mean = False)
+        Z_in = scale(Z_in,axis = 0,with_mean = False)
+
     if train_len == -1:
         #train_len = 4*len(X_in)/3
         train_len = 2*len(X_in)/3

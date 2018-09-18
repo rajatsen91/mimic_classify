@@ -31,6 +31,8 @@ def get_args():
         '-bs', '--bsize', type=int, help='batch size', required=False)
     parser.add_argument(
         '-rf', '--rfile', type=str, help='result file name', required=True)
+    parser.add_argument(
+        '-nm', '--normalized', type=bool, help='normalize data-set?', required=False)
 
     # Array for all arguments passed to script
     args = parser.parse_args()
@@ -53,14 +55,18 @@ def get_args():
     else:
         bsize = 200
     rfile = args.rfile
+    if args.normalized:
+        normalized = args.normalized
+    else:
+        normalized = False
 
-    return folder_path,dx,dy,dz,numfile,nthread,deep,maxepoch,bsize,rfile
+    return folder_path,dx,dy,dz,numfile,nthread,deep,maxepoch,bsize,rfile,normalized
 
 
 
 
 if __name__ == "__main__":
-    folder_path,dx,dy,dz,numfile,nthread,deep,maxepoch,bsize,rfile = get_args()
+    folder_path,dx,dy,dz,numfile,nthread,deep,maxepoch,bsize,rfile,normalized = get_args()
     
     pvalues = []
     d = np.load(folder_path + 'datafile.npy')
@@ -72,7 +78,7 @@ if __name__ == "__main__":
         y = y[1::,1::]
         
         MCR = MIMIFY_REG(y[:,0:dx],y[:,dx:dx+dy],y[:,dx+dy:dx+dy+dz],\
-                 normalized=False,nthread = nthread, deep = deep, max_epoch = maxepoch, bsize = bsize)
+                 normalized=normalized,nthread = nthread, deep = deep, max_epoch = maxepoch, bsize = bsize)
         pvalues = pvalues + [MCR.CI_classify()] 
         print i,d[i],pvalues[-1]
 

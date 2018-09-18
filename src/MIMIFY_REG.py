@@ -52,12 +52,12 @@ class Regressor(nn.Module):
         return output
 
 
-def train_regressor(data,dim_X,dim_Y,dim_Z, max_epoch, BSIZE,option = 1):
+def train_regressor(data,dim_X,dim_Y,dim_Z, max_epoch, BSIZE,option = 1, normalized = False):
     n = data.shape[0]
     max_iter = max_epoch*n/BSIZE + 1
     print 'MAX ITER: ' + str(max_iter)
     print 'in train REG',
-    Data = data_iterator(dx=dim_X,dy=dim_Y,dz=dim_Z,sType = 'CI',size = 10000,bsize = BSIZE,nstd = 0.5,fixed_z = False,data = data,normalized=False)
+    Data = data_iterator(dx=dim_X,dy=dim_Y,dz=dim_Z,sType = 'CI',size = 10000,bsize = BSIZE,nstd = 0.5,fixed_z = False,data = data,normalized=normalized)
     netG = Regressor(dim_Y,dim_Z,dim_Z)
     netG.apply(weights_init)
     criterion = nn.MSELoss()
@@ -388,7 +388,7 @@ def CI_sampler_regressor_v3(X_in,Y_in,Z_in,param_dict):
     data1= samples[0:nx/2,:]
     data2 = samples[nx/2::,:]
 
-    netG = train_regressor(data1,dx,dy,dz, max_epoch=max_epoch, BSIZE=BSIZE,option = 1)
+    netG = train_regressor(data1,dx,dy,dz, max_epoch=max_epoch, BSIZE=BSIZE,option = 1, normalized = normalized)
 
     Xset = range(0,dx)
     Yset = range(dx,dx + dy)
