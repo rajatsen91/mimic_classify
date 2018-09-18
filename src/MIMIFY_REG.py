@@ -60,7 +60,7 @@ def train_regressor(data,dim_X,dim_Y,dim_Z, max_epoch, BSIZE,option = 1):
     Data = data_iterator(dx=dim_X,dy=dim_Y,dz=dim_Z,sType = 'CI',size = 10000,bsize = BSIZE,nstd = 0.5,fixed_z = False,data = data,normalized=False)
     netG = Regressor(dim_Y,dim_Z,dim_Z)
     netG.apply(weights_init)
-    criterion = nn.L1Loss()
+    criterion = nn.MSELoss()
     
     if use_cuda:
         netG = netG.cuda()
@@ -301,7 +301,7 @@ def CI_sampler_regressor_v2(X_in,Y_in,Z_in,param_dict):
     print 'Calculated Covariance: ',
     print cov 
 
-    sigmas = [2**l for l in range(-10,4)]
+    sigmas = [2**l for l in range(-15,4)]
     nz1,mz1 = Z1.shape
 
     mini = 1e6
@@ -406,7 +406,7 @@ def CI_sampler_regressor_v3(X_in,Y_in,Z_in,param_dict):
     print 'Calculated Covariance: ',
     print cov 
 
-    sigmas = [2**l for l in range(-10,4)]
+    sigmas = [2**l for l in range(-15,8)]
     
 
     mini = 1e6

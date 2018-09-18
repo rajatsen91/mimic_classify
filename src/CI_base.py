@@ -79,8 +79,10 @@ class CI_base(object):
     def CI_classify(self):
         np.random.seed(11)
         if self.train_samp == -1:
+            self.num_train = int(4.0*self.nx/3.0)
             Xtrain,Ytrain,Xtest,Ytest = self.mimic_sampler(self.X,self.Y,self.Z, self.param_dict)
         else:
+            self.num_train = 2*self.train_samp*self.nx
             self.param_dict['train_len'] = 2*self.train_samp*self.nx
             Xtrain,Ytrain,Xtest,Ytest = self.mimic_sampler(self.X,self.Y,self.Z, self.param_dict)
 
@@ -103,4 +105,4 @@ class CI_base(object):
         print 'AC_no_x: ' + str(AUC2)
         y = max(x[1],x[3])
         sigma = 1.0/np.sqrt(self.nx)
-        return pvalue(max(x[1],0.0),sigma)
+        return pvalue(x[1],sigma)
