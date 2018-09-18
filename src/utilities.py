@@ -22,7 +22,7 @@ from sklearn.preprocessing import scale
 
 
 def pvalue(x,sigma):
-    return 1.0 - 1.0*norm.cdf(x/sigma)
+    return 2.0 - 2.0*norm.cdf(np.abs(x)/sigma)
 
 def weights_init(m):
     '''Custom weights initialization (from WGAN pytorch code)'''
