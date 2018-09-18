@@ -15,24 +15,41 @@ _Please cite the above papers if this package is used in any publication._
 
 There are two CI Testers one using CGAN as a mimic function and the other using a regression based MIMIC function. The parameters to be specified are as follows:
 
-```
-'''
+
 Base Class for CI Testing. All the parameters may not be used for GAN/Regression testing
-    X,Y,Z: Arrays for input random variables
-    max_depths: max_depth parameter choices for xgboost e.g [6,10,13]
-    n_estimators: n_estimator parameter choices for xgboost e.g [100,200,300]
-    colsample_bytrees: colsample_bytree parameter choices for xgboost e.g [100,200,300]
-    nfold: cross validation number of folds
-    train_samp: percentage of samples to be used for training e.g -1 for default (recommended)
-    nthread: number of parallel threads for xgboost, recommended as number of processors in the machine
-    max_epoch: number of epochs when mimi function is GAN
-    bsize: batch size when mimic function is GAN
-    dim_N: dimension of noise when GAN, if None then set to dim_z + 1, can be set to a moderate value like 20
-    noise: Type of noise for regression mimic function 'Laplace' or 'Normal' or 'Mixture'
-    perc: percentage of mixture Normal for noise type 'Mixture'
-    normalized: Normalize data-set or not
-'''
+    
 
-```
+__X,Y,Z__: Arrays for input random variables
 
-The usage for both the files on synthetic data-sets can be seen in the ipython notebook named _examples_
+__max_depths__: max_depth parameter choices for xgboost e.g [6,10,13]
+
+__n_estimators__: n_estimator parameter choices for xgboost e.g [100,200,300]
+
+__colsample_bytrees__: colsample_bytree parameter choices for xgboost e.g [100,200,300]
+
+__nfold__: cross validation number of folds
+
+__train_samp__: percentage of samples to be used for training e.g -1 for default (recommended)
+
+__nthread__: number of parallel threads for xgboost, recommended as number of processors in the machine
+
+__max_epoch__: number of epochs when mimi function is GAN
+
+__bsize__: batch size when mimic function is GAN or when using a deep regressor for mimifyREG
+
+__dim_N__: dimension of noise when GAN, if None then set to dim_z + 1, can be set to a moderate value like 20
+
+__noise__: Type of noise for regression mimic function 'Laplace' or 'Normal' or 'Mixture'
+
+__perc__: percentage of mixture Normal for noise type 'Mixture'
+
+
+__normalized__: Normalize data-set or not
+
+__deep__: bool argument for mimifyREG. If true it uses a deep network for regression otherwise it uses xgb.
+
+
+The usage for both the files on synthetic data-sets can be seen in the ipython notebook named _examples_. The file `run_mimify_reg.py` gives command-line functionality to run mimify_reg from a structured folder. One such folder with datafiles in `.npy` format has been provided with the repository. An exampel to run this command line argument is provided in `example.sh`.  For mimifyGAN the same functionalities are provided as `run_mimify_GAN.py`. 
+
+
+The file datagen.py in the `/src` folder has functions to generate the synthetic data-sets used in the paper. 
