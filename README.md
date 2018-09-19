@@ -55,5 +55,12 @@ __params__: parameters for deep classifier. Example: {'nhid':20,'nlayers':5,'dro
 
 The usage for both the files on synthetic data-sets can be seen in the ipython notebook named _examples_. The file `run_mimify_reg.py` gives command-line functionality to run mimify_reg from a structured folder. One such folder with datafiles in `.npy` format has been provided with the repository. An exampel to run this command line argument is provided in `example.sh`.  For mimifyGAN the same functionalities are provided as `run_mimify_GAN.py`. 
 
+The default setting has `use_cuda = False` in all relevant files, which means that no GPU speed-up is used. If you have pytorch with CUDA support then you need to set `use_cuda = True` . For this go to src folder and run the following:
+
+`change_use_cuda.py -dr 0`
+
+In order to change back to use `use_cuda = False` again go to src directory and run the following:
+
+`change_use_cuda.py -dr 1`
 
 The file datagen.py in the `/src` folder has functions to generate the synthetic data-sets used in the paper. 
