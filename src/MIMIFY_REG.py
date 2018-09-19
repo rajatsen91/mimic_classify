@@ -39,11 +39,11 @@ class Regressor(nn.Module):
         main = nn.Sequential(
             nn.Linear(dim_Z, DIM),
             nn.ReLU(True),
-            nn.Linear(DIM, dim_Z),
+            nn.Linear(DIM, DIM),
             nn.ReLU(True),
-            nn.Linear(dim_Z, dim_Z),
+            nn.Linear(DIM, DIM),
             nn.ReLU(True),
-            nn.Linear(dim_Z, dim_Y),
+            nn.Linear(DIM, dim_Y),
         )
         self.main = main
 
@@ -52,15 +52,15 @@ class Regressor(nn.Module):
         return output
 
 
-def train_regressor(data,dim_X,dim_Y,dim_Z, max_epoch, BSIZE,option = 1, normalized = False):
+def train_regressor(data,dim_X,dim_Y,dim_Z, max_epoch, BSIZE,option = 1, normalized = False,DIM = 20):
     n = data.shape[0]
     max_iter = max_epoch*n/BSIZE + 1
     print 'MAX ITER: ' + str(max_iter)
-    print 'in train REG',
+    print 'in train REG'
     Data = data_iterator(dx=dim_X,dy=dim_Y,dz=dim_Z,sType = 'CI',size = 10000,bsize = BSIZE,nstd = 0.5,fixed_z = False,data = data,normalized=normalized)
-    netG = Regressor(dim_Y,dim_Z,dim_Z)
+    netG = Regressor(dim_Y,dim_Z,DIM)
     netG.apply(weights_init)
-    criterion = nn.MSELoss()
+    criterion = nn.L1Loss()
     
     if use_cuda:
         netG = netG.cuda()
@@ -81,7 +81,7 @@ def train_regressor(data,dim_X,dim_Y,dim_Z, max_epoch, BSIZE,option = 1, normali
         real_data_Z = Variable(real_data[:,:,dim_X+dim_Y:dim_X+dim_Y+dim_Z])
         netG.zero_grad()
         fake = netG(real_data_Z)
-        G_fake_error = criterion(fake,real_data_Y)
+        G_fake_error = criterion(fake,real_data_Y)/torch.abs(real_data_Y).mean()
         G_fake_error.backward()
         optimizerG.step()
         Wloss = Wloss + [G_fake_error.data.numpy()[0]]
@@ -301,8 +301,10 @@ def CI_sampler_regressor_v2(X_in,Y_in,Z_in,param_dict):
     print 'Calculated Covariance: ',
     print cov 
 
-    sigmas = [2**l for l in range(-15,4)]
     nz1,mz1 = Z1.shape
+
+    mults = [1e-4,1e-3,1e-2,1e-1,1.0]
+    sigmas = [l/np.sqrt(dz) for l in mults]
 
     mini = 1e6
     zsigma = 0 
@@ -364,6 +366,7 @@ def CI_sampler_regressor_v3(X_in,Y_in,Z_in,param_dict):
     BSIZE = param_dict['BSIZE']
     print noise
     perc = param_dict['perc']
+    DIM = param_dict['DIM']
 
     if normalized:
         X_in = scale(X_in,axis = 0,with_mean = False)
@@ -388,7 +391,7 @@ def CI_sampler_regressor_v3(X_in,Y_in,Z_in,param_dict):
     data1= samples[0:nx/2,:]
     data2 = samples[nx/2::,:]
 
-    netG = train_regressor(data1,dx,dy,dz, max_epoch=max_epoch, BSIZE=BSIZE,option = 1, normalized = normalized)
+    netG = train_regressor(data1,dx,dy,dz, max_epoch=max_epoch, BSIZE=BSIZE,option = 1, normalized = normalized,DIM=DIM)
 
     Xset = range(0,dx)
     Yset = range(dx,dx + dy)
@@ -406,7 +409,8 @@ def CI_sampler_regressor_v3(X_in,Y_in,Z_in,param_dict):
     print 'Calculated Covariance: ',
     print cov 
 
-    sigmas = [2**l for l in range(-15,8)]
+    mults = [1e-4,1e-3,1e-2,1e-1,1.0]
+    sigmas = [l/np.sqrt(mz1) for l in mults]
     
 
     mini = 1e6
@@ -434,6 +438,11 @@ def CI_sampler_regressor_v3(X_in,Y_in,Z_in,param_dict):
     Y2hatT = netG(Z2T)
     yprime = Y2hatT.data.numpy().reshape(Y2.shape)
     n2,n22 = data2.shape
+
+    Y2hat = netG(Variable(torch.from_numpy(Z2.reshape(nz2,1,dz)).float()))
+    yprimepro = Y2hat.data.numpy().reshape(Y2.shape)
+
+    print yprimepro[0:10],Y2[0:10]
 
 
     data2_new = np.hstack([X2,yprime,Z2])
@@ -463,8 +472,10 @@ def CI_sampler_regressor_v3(X_in,Y_in,Z_in,param_dict):
 
 
 class MIMIFY_REG(CI_base):
-    def __init__(self,X,Y,Z,max_depths = [6,10,13], n_estimators=[100,200,300], colsample_bytrees=[0.8],nfold = 5,train_samp = -1,nthread = 4,max_epoch=100,bsize=50,dim_N = None, noise = 'Laplace',perc = 0.3, normalized = True, deep = False):
-        super(MIMIFY_REG, self).__init__(X,Y,Z,max_depths , n_estimators, colsample_bytrees,nfold,train_samp,nthread ,max_epoch,bsize,dim_N, noise ,perc , normalized )
+    def __init__(self,X,Y,Z,max_depths = [6,10,13], n_estimators=[100,200,300], colsample_bytrees=[0.8],nfold = 5,\
+        train_samp = -1,nthread = 4,max_epoch=100,bsize=50,dim_N = None, noise = 'Laplace',perc = 0.3, normalized = True, deep = False,DIM = 20):
+        super(MIMIFY_REG, self).__init__(X,Y,Z,max_depths , n_estimators, colsample_bytrees,nfold,train_samp,nthread ,\
+            max_epoch,bsize,dim_N, noise ,perc , normalized )
         self.param_dict = {}
         self.param_dict['train_len'] = self.train_samp
         self.param_dict['max_depth'] = self.max_depths[0]
@@ -476,6 +487,7 @@ class MIMIFY_REG(CI_base):
         self.param_dict['normalized'] = self.normalized
         self.param_dict['BSIZE'] = self.bsize
         self.param_dict['max_epoch'] = self.max_epoch
+        self.param_dict['DIM'] = DIM
         if deep:
             self.mimic_sampler = CI_sampler_regressor_v3
         else:
