@@ -57,10 +57,10 @@ The usage for both the files on synthetic data-sets can be seen in the ipython n
 
 The default setting has `use_cuda = False` in all relevant files, which means that no GPU speed-up is used. If you have pytorch with CUDA support then you need to set `use_cuda = True` . For this go to src folder and run the following:
 
-`change_use_cuda.py -dr 0`
+`python change_use_cuda.py -dr 0`
 
 In order to change back to use `use_cuda = False` again go to src directory and run the following:
 
-`change_use_cuda.py -dr 1`
+`python change_use_cuda.py -dr 1`
 
 The file datagen.py in the `/src` folder has functions to generate the synthetic data-sets used in the paper. 
