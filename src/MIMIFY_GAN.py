@@ -87,7 +87,7 @@ def train_conditional_gan_original(data,dim_N,dim_X,dim_Y,dim_Z, max_epoch, BSIZ
     print 'MAX ITER: ' + str(max_iter)
     print 'in train GAN',
     print normalized
-    Data = data_iterator(dx=dim_X,dy=dim_Y,dz=dim_Z,sType = 'CI',size = 10000,bsize = BSIZE,nstd = 0.5,fixed_z = False,data = data,normalized=normalized)
+    Data = data_iterator(dx=dim_X,dy=dim_Y,dz=dim_Z,bsize = BSIZE,nstd = 0.5,data = data,normalized=normalized)
     netG = Generator(dim_N,dim_Y,dim_Z,dim_Z+dim_N)
     netD = Discriminator_original(dim_X,dim_Y,dim_Z,dim_Z+dim_Y)
     criterion = nn.BCELoss()
@@ -196,12 +196,14 @@ def CI_sampler_conditional_CGAN(X_in,Y_in,Z_in,param_dict):
     normalized = param_dict['normalized']
     print 'in CI Sampler', 
     print normalized
-    samples = np.hstack([X_in,Y_in,Z_in]).astype(np.float32)
+    
 
     if normalized:
         X_in = scale(X_in,axis = 0,with_mean = False)
         Y_in = scale(Y_in,axis = 0,with_mean = False)
         Z_in = scale(Z_in,axis = 0,with_mean = False)
+
+    samples = np.hstack([X_in,Y_in,Z_in]).astype(np.float32)
 
     if train_len == -1:
         #train_len = 4*len(X_in)/3

@@ -81,10 +81,15 @@ class CI_base(object):
         assert (self.nz == self.ny), "Size Mismatch"
         assert (self.nx == self.nz), "Size Mismatch"
 
+        if self.normalized:
+            X = scale(X,axis=0,with_mean = False)
+            Y = scale(Y,axis=0,with_mean = False)
+            Z = scale(Z,axis=0,with_mean = False)
+
     def CI_classify(self):
         np.random.seed(11)
         if self.train_samp == -1:
-            self.num_train = int(4.0*self.nx/3.0)
+            self.num_train = int(2.0*self.nx/3.0)
             Xtrain,Ytrain,Xtest,Ytest = self.mimic_sampler(self.X,self.Y,self.Z, self.param_dict)
         else:
             self.num_train = 2*self.train_samp*self.nx
@@ -94,38 +99,42 @@ class CI_base(object):
         if self.dc:
             params = self.params
             model = MLP(params,Xtrain.shape[1],2,cudaEfficient=True)
-        else:
-            model,features,bp = XGB_crossvalidated_model(max_depths=self.max_depths, n_estimators=self.n_estimators, \
-                colsample_bytrees=self.colsample_bytrees,Xtrain=Xtrain,Ytrain=Ytrain,nfold=self.nfold,feature_selection = 0,nthread = self.nthread)
-        if self.dc:
             model.fit(Xtrain,Ytrain.astype(int),validation_split=0.2)
             gbm = model
-        else:
-            gbm = model.fit(Xtrain,Ytrain)
-        try:
-            pred = gbm.predict_proba(Xtest)
-        except:
             pred = gbm.predict_proba(torch.from_numpy(Xtest).float())
-        pred_exact = np.argmax(pred,axis =1)
-        acc1 = accuracy_score(Ytest, pred_exact)
-        AUC1 = roc_auc_score(Ytest,pred[:,1])
-        del gbm
-        if self.dc:
-            params = self.params
+            pred_exact = np.argmax(pred,axis =1)
+            acc1 = accuracy_score(Ytest, pred_exact)
+            AUC1 = roc_auc_score(Ytest,pred[:,1])
+            del gbm
             model = MLP(params,Xtrain[:,self.dx::].shape[1],2,cudaEfficient=True)
-        if self.dc:
             model.fit(Xtrain[:,self.dx::],Ytrain.astype(int),validation_split=0.2)
             gbm = model
-        else:
-            gbm = model.fit(Xtrain[:,self.dx::],Ytrain)
-        try:
-            pred = gbm.predict_proba(Xtest[:,self.dx::])
-        except:
             pred = gbm.predict_proba(torch.from_numpy(Xtest[:,self.dx::]).float())
-        pred_exact = np.argmax(pred,axis =1)
-        acc2 = accuracy_score(Ytest, pred_exact)
-        AUC2 = roc_auc_score(Ytest,pred[:,1])
-        del gbm
+            pred_exact = np.argmax(pred,axis =1)
+            acc2 = accuracy_score(Ytest, pred_exact)
+            AUC2 = roc_auc_score(Ytest,pred[:,1])
+            print 'Using Deep Model: ',
+            print gbm
+            del gbm
+        else:
+            model,features,bp = XGB_crossvalidated_model(max_depths=self.max_depths, n_estimators=self.n_estimators, \
+                colsample_bytrees=self.colsample_bytrees,Xtrain=Xtrain,Ytrain=Ytrain,\
+                                                         nfold=self.nfold,feature_selection = 0,nthread = self.nthread)
+            gbm = model.fit(Xtrain,Ytrain)
+            pred = gbm.predict_proba(Xtest)
+            pred_exact = np.argmax(pred,axis =1)
+            acc1 = accuracy_score(Ytest, pred_exact)
+            AUC1 = roc_auc_score(Ytest,pred[:,1])
+            del gbm
+            gbm = model.fit(Xtrain[:,self.dx::],Ytrain)
+            pred = gbm.predict_proba(Xtest[:,self.dx::])
+            pred_exact = np.argmax(pred,axis =1)
+            acc2 = accuracy_score(Ytest, pred_exact)
+            AUC2 = roc_auc_score(Ytest,pred[:,1])
+            print 'Using XGB model: '
+            print gbm
+            del gbm
+        
         x = [0.0, AUC1 - AUC2 , AUC2 - 0.5, acc1 - acc2, acc2 - 0.5]
         print 'AC_w_x: ' + str(AUC1),
         print 'AC_no_x: ' + str(AUC2)

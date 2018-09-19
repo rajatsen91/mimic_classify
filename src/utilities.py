@@ -40,39 +40,39 @@ class data_iterator(object):
     def __init__(self,dx,dy,dz,sType = 'CI',size = 10000,bsize = 50,nstd = 0.5,fixed_z = False,data = None,channel = 1,normalized = False ):
         if data is not None:
             self.dataset = data
-        else:
-            cov = np.eye(dz)
-            mu = np.ones(dz)
-            if fixed_z:
-                Z = list(np.random.multivariate_normal(mu,cov,1))*size
-                Z = np.array(Z)
-            else:
-                Z = np.random.multivariate_normal(mu,cov,size)
-            Z = np.matrix(Z)
-            Ax = np.random.rand(dz,dx)
-            for i in range(dx):
-                Ax[:,i] = Ax[:,i]/np.linalg.norm(Ax[:,i])
-            Ax = np.matrix(Ax)
-            Ay = np.random.rand(dz,dy)
-            for i in range(dy):
-                Ay[:,i] = Ay[:,i]/np.linalg.norm(Ay[:,i])
-            Ay = np.matrix(Ay)
+        # else:
+        #     cov = np.eye(dz)
+        #     mu = np.ones(dz)
+        #     if fixed_z:
+        #         Z = list(np.random.multivariate_normal(mu,cov,1))*size
+        #         Z = np.array(Z)
+        #     else:
+        #         Z = np.random.multivariate_normal(mu,cov,size)
+        #     Z = np.matrix(Z)
+        #     Ax = np.random.rand(dz,dx)
+        #     for i in range(dx):
+        #         Ax[:,i] = Ax[:,i]/np.linalg.norm(Ax[:,i])
+        #     Ax = np.matrix(Ax)
+        #     Ay = np.random.rand(dz,dy)
+        #     for i in range(dy):
+        #         Ay[:,i] = Ay[:,i]/np.linalg.norm(Ay[:,i])
+        #     Ay = np.matrix(Ay)
 
-            Axy = np.random.rand(dx,dy)
-            for i in range(dy):
-                Axy[:,i] = Axy[:,i]/np.linalg.norm(Axy[:,i])
-            Axy = np.matrix(Axy)
+        #     Axy = np.random.rand(dx,dy)
+        #     for i in range(dy):
+        #         Axy[:,i] = Axy[:,i]/np.linalg.norm(Axy[:,i])
+        #     Axy = np.matrix(Axy)
 
-            if sType == 'CI':
-                X = Z*Ax + nstd*np.random.multivariate_normal(np.zeros(dx),np.eye(dx),size)
-                Y = Z*Ay + nstd*np.random.multivariate_normal(np.zeros(dy),np.eye(dy),size)
-            elif sType == 'I':
-                X = nstd*np.random.multivariate_normal(np.zeros(dx),np.eye(dx),size)
-                Y = nstd*np.random.multivariate_normal(np.zeros(dy),np.eye(dy),size)
-            else:
-                X = np.random.multivariate_normal(np.zeros(dx),np.eye(dx),size)
-                Y = 2*X*Axy + Z*Ay + nstd*np.random.multivariate_normal(np.zeros(dy),np.eye(dy),size)
-            self.dataset = np.array(np.hstack([X,Y,Z])).astype(np.float32)
+        #     if sType == 'CI':
+        #         X = Z*Ax + nstd*np.random.multivariate_normal(np.zeros(dx),np.eye(dx),size)
+        #         Y = Z*Ay + nstd*np.random.multivariate_normal(np.zeros(dy),np.eye(dy),size)
+        #     elif sType == 'I':
+        #         X = nstd*np.random.multivariate_normal(np.zeros(dx),np.eye(dx),size)
+        #         Y = nstd*np.random.multivariate_normal(np.zeros(dy),np.eye(dy),size)
+        #     else:
+        #         X = np.random.multivariate_normal(np.zeros(dx),np.eye(dx),size)
+        #         Y = 2*X*Axy + Z*Ay + nstd*np.random.multivariate_normal(np.zeros(dy),np.eye(dy),size)
+        #     self.dataset = np.array(np.hstack([X,Y,Z])).astype(np.float32)
         #print normalized
         if normalized is True:
             self.dataset = scale(self.dataset,axis = 0,with_mean = False)

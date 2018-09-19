@@ -57,7 +57,7 @@ def train_regressor(data,dim_X,dim_Y,dim_Z, max_epoch, BSIZE,option = 1, normali
     max_iter = max_epoch*n/BSIZE + 1
     print 'MAX ITER: ' + str(max_iter)
     print 'in train REG'
-    Data = data_iterator(dx=dim_X,dy=dim_Y,dz=dim_Z,sType = 'CI',size = 10000,bsize = BSIZE,nstd = 0.5,fixed_z = False,data = data,normalized=normalized)
+    Data = data_iterator(dx=dim_X,dy=dim_Y,dz=dim_Z,bsize = BSIZE,nstd = 0.5,data = data,normalized=normalized)
     netG = Regressor(dim_Y,dim_Z,DIM)
     netG.apply(weights_init)
     criterion = nn.L1Loss()
@@ -285,7 +285,8 @@ def CI_sampler_regressor_v2(X_in,Y_in,Z_in,param_dict):
     data1= samples[0:nx/2,:]
     data2 = samples[nx/2::,:]
 
-    multioutputregressor = MultiOutputRegressor(estimator=xgb.XGBRegressor(objective='reg:linear',max_depth=max_depth, colsample_bytree= 1.0, n_estimators=n_estimators,nthread=nthread))
+    multioutputregressor = MultiOutputRegressor(estimator=xgb.XGBRegressor(objective='reg:linear',max_depth=max_depth, \
+        colsample_bytree= 1.0, n_estimators=n_estimators,nthread=nthread))
 
     Xset = range(0,dx)
     Yset = range(dx,dx + dy)
@@ -303,7 +304,7 @@ def CI_sampler_regressor_v2(X_in,Y_in,Z_in,param_dict):
 
     nz1,mz1 = Z1.shape
 
-    mults = [1e-4,1e-3,1e-2,1e-1,1.0]
+    mults = [1e-5,1e-4,1e-3,1e-2,1e-1]
     sigmas = [l/np.sqrt(dz) for l in mults]
 
     mini = 1e6
@@ -409,7 +410,7 @@ def CI_sampler_regressor_v3(X_in,Y_in,Z_in,param_dict):
     print 'Calculated Covariance: ',
     print cov 
 
-    mults = [1e-4,1e-3,1e-2,1e-1,1.0]
+    mults = [1e-4,1e-3,1e-2,1e-1]
     sigmas = [l/np.sqrt(mz1) for l in mults]
     
 
