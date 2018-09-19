@@ -265,8 +265,10 @@ def CI_sampler_conditional_CGAN(X_in,Y_in,Z_in,param_dict):
 
 
 class MIMIFY_GAN(CI_base):
-    def __init__(self,X,Y,Z,max_depths = [6,10,13], n_estimators=[100,200,300], colsample_bytrees=[0.8],nfold = 5,train_samp = -1,nthread = 4,max_epoch=100,bsize=50,dim_N = None, noise = 'Laplace',perc = 0.3, normalized = True):
-        super(MIMIFY_GAN, self).__init__(X,Y,Z,max_depths , n_estimators, colsample_bytrees,nfold,train_samp,nthread ,max_epoch,bsize,dim_N, noise ,perc , normalized )
+    def __init__(self,X,Y,Z,max_depths = [6,10,13], n_estimators=[100,200,300], colsample_bytrees=[0.8],nfold = 5,train_samp = -1,nthread = 4,\
+        max_epoch=100,bsize=50,dim_N = None, noise = 'Laplace',perc = 0.3, normalized = True,deep_classifier = False,params =  {'nhid':20,'nlayers':3}):
+        super(MIMIFY_GAN, self).__init__(X,Y,Z,max_depths , n_estimators, colsample_bytrees,nfold,train_samp,nthread ,max_epoch,bsize,dim_N, noise ,perc , \
+            normalized,deep_classifier, params)
         self.param_dict = {}
         self.param_dict['train_len'] = self.train_samp
         self.param_dict['max_epoch'] = self.max_epoch

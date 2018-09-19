@@ -19,6 +19,7 @@ from CCIT import *
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import scale
+from classifier import *
 
 torch.manual_seed(11)
 
@@ -46,7 +47,9 @@ class CI_base(object):
     perc: percentage of mixture Normal for noise type 'Mixture'
     normalized: Normalize data-set or not
     '''
-    def __init__(self,X,Y,Z,max_depths = [6,10,13], n_estimators=[100,200,300], colsample_bytrees=[0.8],nfold = 5,train_samp = -1,nthread = 4,max_epoch=100,bsize=50,dim_N = None, noise = 'Laplace',perc = 0.3, normalized = True):
+    def __init__(self,X,Y,Z,max_depths = [6,10,13], n_estimators=[100,200,300], colsample_bytrees=[0.8],nfold = 5,\
+        train_samp = -1,nthread = 4,max_epoch=100,bsize=50,dim_N = None, noise = 'Laplace',perc = 0.3, normalized = True,\
+        deep_classifier = False,params =  {'nhid':20,'nlayers':3}):
         self.X = X
         self.Y = Y
         self.Z = Z
@@ -62,6 +65,8 @@ class CI_base(object):
         self.noise = noise
         self.perc = perc
         self.normalized = normalized
+        self.dc = deep_classifier
+        self.params = params
         np.random.seed(11)
         
         assert (type(X) == np.ndarray),"Not an array"
@@ -86,17 +91,38 @@ class CI_base(object):
             self.param_dict['train_len'] = 2*self.train_samp*self.nx
             Xtrain,Ytrain,Xtest,Ytest = self.mimic_sampler(self.X,self.Y,self.Z, self.param_dict)
 
-
-        model,features,bp = XGB_crossvalidated_model(max_depths=self.max_depths, n_estimators=self.n_estimators, colsample_bytrees=self.colsample_bytrees,Xtrain=Xtrain,Ytrain=Ytrain,nfold=self.nfold,feature_selection = 0,nthread = self.nthread)
-        gbm = model.fit(Xtrain,Ytrain)
-        pred = gbm.predict_proba(Xtest)
-        pred_exact = gbm.predict(Xtest)
+        if self.dc:
+            params = self.params
+            model = MLP(params,Xtrain.shape[1],2,cudaEfficient=True)
+        else:
+            model,features,bp = XGB_crossvalidated_model(max_depths=self.max_depths, n_estimators=self.n_estimators, \
+                colsample_bytrees=self.colsample_bytrees,Xtrain=Xtrain,Ytrain=Ytrain,nfold=self.nfold,feature_selection = 0,nthread = self.nthread)
+        if self.dc:
+            model.fit(Xtrain,Ytrain.astype(int),validation_split=0.2)
+            gbm = model
+        else:
+            gbm = model.fit(Xtrain,Ytrain)
+        try:
+            pred = gbm.predict_proba(Xtest)
+        except:
+            pred = gbm.predict_proba(torch.from_numpy(Xtest).float())
+        pred_exact = np.argmax(pred,axis =1)
         acc1 = accuracy_score(Ytest, pred_exact)
         AUC1 = roc_auc_score(Ytest,pred[:,1])
         del gbm
-        gbm = model.fit(Xtrain[:,self.dx::],Ytrain)
-        pred = gbm.predict_proba(Xtest[:,self.dx::])
-        pred_exact = gbm.predict(Xtest[:,self.dx::])
+        if self.dc:
+            params = self.params
+            model = MLP(params,Xtrain[:,self.dx::].shape[1],2,cudaEfficient=True)
+        if self.dc:
+            model.fit(Xtrain[:,self.dx::],Ytrain.astype(int),validation_split=0.2)
+            gbm = model
+        else:
+            gbm = model.fit(Xtrain[:,self.dx::],Ytrain)
+        try:
+            pred = gbm.predict_proba(Xtest[:,self.dx::])
+        except:
+            pred = gbm.predict_proba(torch.from_numpy(Xtest[:,self.dx::]).float())
+        pred_exact = np.argmax(pred,axis =1)
         acc2 = accuracy_score(Ytest, pred_exact)
         AUC2 = roc_auc_score(Ytest,pred[:,1])
         del gbm

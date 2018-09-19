@@ -32,7 +32,18 @@ def get_args():
     parser.add_argument(
         '-rf', '--rfile', type=str, help='result file name', required=True)
     parser.add_argument(
-        '-nm', '--normalized', type=bool, help='normalize data-set?', required=False)
+        '-nm', '--normalized', type=int, help='normalize data-set? 1 for normalized 0 otherwise', required=True)
+    parser.add_argument(
+        '-dm', '--dim', type=int, help='hidden size of regressor', required=False)
+    parser.add_argument(
+        '-dc', '--deepclassifier', type=int, help='1 if deep classifier, 0 if xgb', required=True)
+    parser.add_argument(
+        '-nh', '--nhid', type=int, help='number of neurons in hidden layer of deep classifier', required=False)
+    parser.add_argument(
+        '-nl', '--nlayers', type=int, help='number of layers in deep classifier', required=False)
+    parser.add_argument(
+        '-dr', '--dropout', type=float, help='dropout in deep classifier', required=False)
+
 
     # Array for all arguments passed to script
     args = parser.parse_args()
@@ -55,19 +66,49 @@ def get_args():
     else:
         bsize = 200
     rfile = args.rfile
-    if args.normalized:
-        normalized = args.normalized
-    else:
-        normalized = False
+    normalized = args.normalized
 
-    return folder_path,dx,dy,dz,numfile,nthread,deep,maxepoch,bsize,rfile,normalized
+    if args.dim:
+        DIM = args.dim 
+    else:
+        DIM = 20
+
+    dc = args.deepclassifier
+    if args.nhid:
+        nh = args.nhid
+    else:
+        nh = 20
+    if args.nlayers:
+        nl = args.nlayers
+    else:
+        nl = 5
+    if args.dropout:
+        dr = args.dropout
+    else:
+        dr = 0.2
+
+  
+
+    return folder_path,dx,dy,dz,numfile,nthread,deep,maxepoch,bsize,rfile,normalized,DIM,dc,nh,nl,dr
 
 
 
 
 if __name__ == "__main__":
-    folder_path,dx,dy,dz,numfile,nthread,deep,maxepoch,bsize,rfile,normalized = get_args()
-    
+    folder_path,dx,dy,dz,numfile,nthread,deep,maxepoch,bsize,rfile,normalized,DIM,dc,nh,nl,dr = get_args()
+    print 'Normalized Commandline: ', 
+    if normalized == 1:
+        temp = True
+    else:
+        temp = False
+    if dc == 1:
+        deepclassifier = True
+    else:
+        deepclassifier = False
+
+    params = {'nhid':nh,'nlayers':nl,'dropout':dr}
+    normalized= temp
+    print normalized
     pvalues = []
     d = np.load(folder_path + 'datafile.npy')
     for i in range(numfile):
@@ -78,7 +119,7 @@ if __name__ == "__main__":
         y = y[1::,1::]
         
         MCR = MIMIFY_REG(y[:,0:dx],y[:,dx:dx+dy],y[:,dx+dy:dx+dy+dz],\
-                 normalized=normalized,nthread = nthread, deep = deep, max_epoch = maxepoch, bsize = bsize)
+                 normalized=normalized,nthread = nthread, deep = deep, max_epoch = maxepoch, bsize = bsize,DIM = DIM,deep_classifier=deepclassifier,params = params)
         pvalues = pvalues + [MCR.CI_classify()] 
         print i,d[i],pvalues[-1]
 

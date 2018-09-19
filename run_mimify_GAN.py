@@ -32,7 +32,17 @@ def get_args():
     parser.add_argument(
         '-rf', '--rfile', type=str, help='result file name', required=True)
     parser.add_argument(
-        '-nm', '--normalized', type=bool, help='normalize data-set?', required=False)
+        '-nm', '--normalized', type=int, help='normalize data-set?', required=True)
+    parser.add_argument(
+        '-dm', '--dim', type=int, help='hidden size of regressor', required=False)
+    parser.add_argument(
+        '-dc', '--deepclassifier', type=int, help='1 if deep classifier, 0 if xgb', required=True)
+    parser.add_argument(
+        '-nh', '--nhid', type=int, help='number of neurons in hidden layer of deep classifier', required=False)
+    parser.add_argument(
+        '-nl', '--nlayers', type=int, help='number of layers in deep classifier', required=False)
+    parser.add_argument(
+        '-dr', '--dropout', type=float, help='dropout in deep classifier', required=False)
 
     # Array for all arguments passed to script
     args = parser.parse_args()
@@ -60,18 +70,27 @@ def get_args():
     else:
         bsize = 50
     rfile = args.rfile
-    if args.normalized:
-        normalized = args.normalized
-    else:
-        normalized = False
+    normalized = args.normalized
 
-    return folder_path,dx,dy,dz,numfile,nthread,dimN,maxepoch,bsize,rfile,normalized
+    return folder_path,dx,dy,dz,numfile,nthread,dimN,maxepoch,bsize,rfile,normalized,dc,nh,nl,dr
 
 
 
 
 if __name__ == "__main__":
-    folder_path,dx,dy,dz,numfile,nthread,dim_N,maxepoch,bsize,rfile,normalized = get_args()
+    folder_path,dx,dy,dz,numfile,nthread,dim_N,maxepoch,bsize,rfile,normalized,dc,nh,nl,dr = get_args()
+    if normalized == 1:
+        temp = True
+    else:
+        temp = False
+    if dc == 1:
+        deepclassifier = True
+    else:
+        deepclassifier = False
+
+    normalized = temp
+
+    params = {'nhid':nh,'nlayers':nl,'dropout':dr}
     
     pvalues = []
     d = np.load(folder_path + 'datafile.npy')
@@ -83,7 +102,7 @@ if __name__ == "__main__":
         y = y[1::,1::]
         
         MCG = MIMIFY_GAN(y[:,0:dx],y[:,dx:dx+dy],y[:,dx+dy:dx+dy+dz],\
-                 normalized=normalized,nthread = nthread, dim_N = dim_N, max_epoch = maxepoch, bsize = bsize)
+                 normalized=normalized,nthread = nthread, dim_N = dim_N, max_epoch = maxepoch, bsize = bsize,deepclassifier=deep_classifier,params = params)
         pvalues = pvalues + [MCG.CI_classify()] 
         print i,d[i],pvalues[-1]
 
