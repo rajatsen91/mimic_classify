@@ -44,7 +44,7 @@ __noise__: Type of noise for regression mimic function 'Laplace' or 'Normal' or 
 __perc__: percentage of mixture Normal for noise type 'Mixture'
 
 
-__normalized__: Normalize data-set or not
+__normalized__: Normalize data-set or not. Recommended setting is True. 
 
 __deep__: bool argument for mimifyREG. If true it uses a deep network for regression otherwise it uses xgb.
 
