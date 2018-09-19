@@ -439,10 +439,10 @@ def CI_sampler_regressor_v3(X_in,Y_in,Z_in,param_dict):
     yprime = Y2hatT.data.numpy().reshape(Y2.shape)
     n2,n22 = data2.shape
 
-    Y2hat = netG(Variable(torch.from_numpy(Z2.reshape(nz2,1,dz)).float()))
-    yprimepro = Y2hat.data.numpy().reshape(Y2.shape)
+    # Y2hat = netG(Variable(torch.from_numpy(Z2.reshape(nz2,1,dz)).float()))
+    # yprimepro = Y2hat.data.numpy().reshape(Y2.shape)
 
-    print yprimepro[0:10],Y2[0:10]
+    # print yprimepro[0:10],Y2[0:10]
 
 
     data2_new = np.hstack([X2,yprime,Z2])
