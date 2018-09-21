@@ -52,6 +52,8 @@ __deep_classifier__: if the classifier used is a deep model or xgboost. If deep 
 
 __params__: parameters for deep classifier. Example: {'nhid':20,'nlayers':5,'dropout':0.2} means 5 layers each with 20 neurons and train dropout of 0.2. 
 
+__For regular use we recommend deep = False and deep\_classifier=False. These options are still being prototyped.__
+
 
 The usage for both the files on synthetic data-sets can be seen in the ipython notebook named _examples_. The file `run_mimify_reg.py` gives command-line functionality to run mimify_reg from a structured folder. One such folder with datafiles in `.npy` format has been provided with the repository. An exampel to run this command line argument is provided in `example.sh`.  For mimifyGAN the same functionalities are provided as `run_mimify_GAN.py`. 
 

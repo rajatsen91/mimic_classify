@@ -12,9 +12,11 @@ Classifiers include Logistic Regression and MLP
 
 from __future__ import absolute_import, division, unicode_literals
 
+
+
 import numpy as np
 import copy
-import utils
+import src.utils as utils
 
 import torch
 from torch import nn
