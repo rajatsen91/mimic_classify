@@ -71,6 +71,20 @@ def get_args():
         bsize = 50
     rfile = args.rfile
     normalized = args.normalized
+    dc = args.deepclassifier
+    if args.nhid:
+        nh = args.nhid
+    else:
+        nh = 20
+    if args.nlayers:
+        nl = args.nlayers
+    else:
+        nl = 5
+    if args.dropout:
+        dr = args.dropout
+    else:
+        dr = 0.2
+
 
     return folder_path,dx,dy,dz,numfile,nthread,dimN,maxepoch,bsize,rfile,normalized,dc,nh,nl,dr
 
@@ -102,7 +116,7 @@ if __name__ == "__main__":
         y = y[1::,1::]
         
         MCG = MIMIFY_GAN(y[:,0:dx],y[:,dx:dx+dy],y[:,dx+dy:dx+dy+dz],\
-                 normalized=normalized,nthread = nthread, dim_N = dim_N, max_epoch = maxepoch, bsize = bsize,deepclassifier=deep_classifier,params = params)
+                 normalized=normalized,nthread = nthread, dim_N = dim_N, max_epoch = maxepoch, bsize = bsize,deep_classifier=deepclassifier,params = params)
         pvalues = pvalues + [MCG.CI_classify()] 
         print i,d[i],pvalues[-1]
 

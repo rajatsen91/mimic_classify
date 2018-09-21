@@ -21,7 +21,7 @@ from sklearn.preprocessing import scale
 torch.manual_seed(11)
 
 
-use_cuda = False
+use_cuda = True
 CRITIC_ITERS = 5
 FIXED_GENERATOR = False
 
@@ -84,7 +84,10 @@ def train_regressor(data,dim_X,dim_Y,dim_Z, max_epoch, BSIZE,option = 1, normali
         G_fake_error = criterion(fake,real_data_Y)/torch.abs(real_data_Y).mean()
         G_fake_error.backward()
         optimizerG.step()
-        Wloss = Wloss + [G_fake_error.data.numpy()[0]]
+	if use_cuda:
+        	Wloss = Wloss + [G_fake_error.cpu().detach().numpy()]
+	else:
+		Wloss = Wloss + [G_fake_error.data.numpy()[0]]
         if iteration % 100 == 99:
             print 'Iter#: ' + str(iteration)
             print 'loss:',

@@ -21,7 +21,7 @@ from sklearn.preprocessing import scale
 torch.manual_seed(11)
 
 
-use_cuda = False
+use_cuda = True
 CRITIC_ITERS = 5
 FIXED_GENERATOR = False
 
@@ -110,7 +110,8 @@ def train_conditional_gan_original(data,dim_N,dim_X,dim_Y,dim_Z, max_epoch, BSIZ
         one = one.cuda()
         mone = mone.cuda()
     Wloss = []
-
+    
+    print netG, next(netG.parameters()).is_cuda
     for iteration in xrange(max_iter):
         ############################
         # (1) Update D network
@@ -142,7 +143,7 @@ def train_conditional_gan_original(data,dim_N,dim_X,dim_Y,dim_Z, max_epoch, BSIZ
             D_fake_error = criterion(D_fake,Variable(mone))
             D_fake_error.backward()
             if use_cuda:
-                Wloss = Wloss + [D_fake_error.cpu().data.numpy()[0] + D_real_error.cpu().data.numpy()[0]]
+                Wloss = Wloss + [D_fake_error.cpu().data.numpy() + D_real_error.cpu().data.numpy()]
             else:
                 Wloss = Wloss + [D_fake_error.data.numpy()[0] + D_real_error.data.numpy()[0]]
             optimizerD.step()

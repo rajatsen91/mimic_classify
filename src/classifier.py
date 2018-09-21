@@ -23,7 +23,7 @@ from torch import nn
 from torch.autograd import Variable
 import torch.nn.functional as F
 
-use_cuda = False
+use_cuda = True
 
 
 class PyTorchClassifier(object):
@@ -109,7 +109,10 @@ class PyTorchClassifier(object):
                 output = self.model(Xbatch)
                 # loss
                 loss = self.loss_fn(output, ybatch)
-                all_costs.append(loss.data.numpy()[0])
+		if use_cuda:
+                	all_costs.append(loss.cpu().detach().numpy())
+		else:
+			all_costs.append(loss.data.numpy()[0])
                 # backward
                 self.optimizer.zero_grad()
                 loss.backward()
@@ -154,10 +157,12 @@ class PyTorchClassifier(object):
     def predict_proba(self, devX):
         #with torch.no_grad():
         self.model.eval()
+	if use_cuda:
+		devX = devX.cuda()
         probas = []
         for i in range(0, len(devX), self.batch_size):
             Xbatch = Variable(devX[i:i + self.batch_size])
-            vals = F.softmax(self.model(Xbatch)).data.numpy()
+            vals = F.softmax(self.model(Xbatch)).cpu().data.numpy()
             if len(probas) == 0:
                 probas = vals
             else:

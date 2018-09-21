@@ -24,7 +24,7 @@ from classifier import *
 torch.manual_seed(11)
 
 
-use_cuda = False
+use_cuda = True
 CRITIC_ITERS = 5
 
 from utilities import *
