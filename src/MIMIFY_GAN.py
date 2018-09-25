@@ -40,11 +40,11 @@ class Generator(nn.Module):
         main = nn.Sequential(
             nn.Linear(dim_N+dim_Z, DIM),
             nn.ReLU(True),
-            nn.Linear(DIM, dim_Z),
+            nn.Linear(DIM, max(dim_Z,dim_Y)),
             nn.ReLU(True),
-            nn.Linear(dim_Z, dim_Z),
+            nn.Linear(max(dim_Z,dim_Y), max(dim_Z,dim_Y)),
             nn.ReLU(True),
-            nn.Linear(dim_Z, dim_Y),
+            nn.Linear(max(dim_Z,dim_Y), dim_Y),
         )
         self.main = main
 
@@ -64,11 +64,11 @@ class Discriminator_original(nn.Module):
         main = nn.Sequential(
             nn.Linear(dim_Y+ dim_Z, DIM),
             nn.ReLU(True),
-            nn.Linear(DIM, dim_Z),
+            nn.Linear(DIM,max(dim_Z,dim_Y)),
             nn.ReLU(True),
-            nn.Linear(dim_Z, dim_Z),
+            nn.Linear(max(dim_Z,dim_Y), max(dim_Z,dim_Y)),
             nn.ReLU(True),
-            nn.Linear(dim_Z, 1),
+            nn.Linear(max(dim_Z,dim_Y), 1),
             nn.Sigmoid(),
         )
         self.main = main
