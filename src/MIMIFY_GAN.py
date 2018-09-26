@@ -95,9 +95,10 @@ def train_conditional_gan_original(data,dim_N,dim_X,dim_Y,dim_Z, max_epoch, BSIZ
     #print netD
     netD.apply(weights_init)
     netG.apply(weights_init)
+
     if use_cuda:
         netD = netD.cuda()
-        netG = netG.cuda()
+        netG = netG.cuda() 
     optimizerD = optim.Adam(netD.parameters(), lr=1e-3, betas=(0.5, 0.9))
     optimizerG = optim.Adam(netG.parameters(), lr=1e-3, betas=(0.5, 0.9))
 
@@ -170,7 +171,8 @@ def train_conditional_gan_original(data,dim_N,dim_X,dim_Y,dim_Z, max_epoch, BSIZ
             G_fake_error = criterion(D_fake,Variable(one))
             G_fake_error.backward()
             optimizerG.step()
-            if iteration % 100 == 99:
+
+           if iteration % 100 == 99:
                 print 'Iter#: ' + str(iteration)
                 print 'loss:',
                 print np.mean(Wloss[-99:])
@@ -192,7 +194,6 @@ def CI_sampler_conditional_CGAN(X_in,Y_in,Z_in,param_dict):
     normalized = param_dict['normalized']
     print 'in CI Sampler',
     print normalized
-
     if normalized:
         X_in = scale(X_in,axis = 0,with_mean = False)
         Y_in = scale(Y_in,axis = 0,with_mean = False)
