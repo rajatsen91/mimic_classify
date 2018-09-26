@@ -95,11 +95,9 @@ def train_conditional_gan_original(data,dim_N,dim_X,dim_Y,dim_Z, max_epoch, BSIZ
     #print netD
     netD.apply(weights_init)
     netG.apply(weights_init)
-    
     if use_cuda:
         netD = netD.cuda()
         netG = netG.cuda()
-    
     optimizerD = optim.Adam(netD.parameters(), lr=1e-3, betas=(0.5, 0.9))
     optimizerG = optim.Adam(netG.parameters(), lr=1e-3, betas=(0.5, 0.9))
 
@@ -110,7 +108,6 @@ def train_conditional_gan_original(data,dim_N,dim_X,dim_Y,dim_Z, max_epoch, BSIZ
         one = one.cuda()
         mone = mone.cuda()
     Wloss = []
-    
     print netG, next(netG.parameters()).is_cuda
     for iteration in xrange(max_iter):
         ############################
@@ -173,12 +170,10 @@ def train_conditional_gan_original(data,dim_N,dim_X,dim_Y,dim_Z, max_epoch, BSIZ
             G_fake_error = criterion(D_fake,Variable(one))
             G_fake_error.backward()
             optimizerG.step()
-            
             if iteration % 100 == 99:
                 print 'Iter#: ' + str(iteration)
                 print 'loss:',
                 print np.mean(Wloss[-99:])
-                
     if use_cuda:
         return netG.cpu(),netD.cpu()
     return netG,netD
@@ -188,16 +183,15 @@ def CI_sampler_conditional_CGAN(X_in,Y_in,Z_in,param_dict):
     np.random.seed(11)
     nx,dx = X_in.shape
     ny,dy = Y_in.shape
-    nz,dz = Z_in.shape 
+    nz,dz = Z_in.shape
     train_len = param_dict['train_len'] #-1
     max_epoch = param_dict['max_epoch']
     BSIZE = param_dict['BSIZE']
     option = param_dict['option'] #1
     dim_N = param_dict['dim_N']
     normalized = param_dict['normalized']
-    print 'in CI Sampler', 
+    print 'in CI Sampler',
     print normalized
-    
 
     if normalized:
         X_in = scale(X_in,axis = 0,with_mean = False)
