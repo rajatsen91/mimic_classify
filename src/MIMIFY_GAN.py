@@ -172,7 +172,7 @@ def train_conditional_gan_original(data,dim_N,dim_X,dim_Y,dim_Z, max_epoch, BSIZ
             G_fake_error.backward()
             optimizerG.step()
 
-           if iteration % 100 == 99:
+            if iteration % 100 == 99:
                 print 'Iter#: ' + str(iteration)
                 print 'loss:',
                 print np.mean(Wloss[-99:])
