@@ -208,10 +208,12 @@ def CI_sampler_conditional_CGAN(X_in,Y_in,Z_in,param_dict):
     #assert (train_len < 2*nx), "Training length cannot be larger than total length"
     assert (train_len < nx), "Training length cannot be larger than total length"
 
-    data1= samples[0:nx/2,:]
-    #data1 = samples
-    #data2 = copy.deepcopy(samples)
-    data2 = samples[nx/2::,:]
+
+    I = np.random.choice(nx,nx,replace=False)
+    data1 = samples[I[0:nx/2],:]
+    data2 = samples[I[nx/2:nx],:]
+
+
     if dim_N:
         dim_N = dim_N
     else:

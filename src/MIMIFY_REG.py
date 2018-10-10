@@ -130,8 +130,10 @@ def CI_sampler_regressor(X_in,Y_in,Z_in,param_dict):
 
     assert (train_len < nx), "Training length cannot be larger than total length"
 
-    data1= samples[0:nx/2,:]
-    data2 = samples[nx/2::,:]
+    I = np.random.choice(nx,nx,replace=False)
+    data1= samples[I[0:nx/2],:]
+    data2 = samples[I[nx/2:nx],:]
+
 
     multioutputregressor = MultiOutputRegressor(estimator=xgb.XGBRegressor(objective='reg:linear',max_depth=max_depth, colsample_bytree= 1.0, n_estimators=n_estimators,nthread=nthread))
 
@@ -285,8 +287,9 @@ def CI_sampler_regressor_v2(X_in,Y_in,Z_in,param_dict):
 
     assert (train_len < nx), "Training length cannot be larger than total length"
 
-    data1= samples[0:nx/2,:]
-    data2 = samples[nx/2::,:]
+    I = np.random.choice(nx,nx,replace=False)
+    data1= samples[I[0:nx/2],:]
+    data2 = samples[I[nx/2:nx],:]
 
     multioutputregressor = MultiOutputRegressor(estimator=xgb.XGBRegressor(objective='reg:linear',max_depth=max_depth, \
         colsample_bytree= 1.0, n_estimators=n_estimators,nthread=nthread))
@@ -392,8 +395,9 @@ def CI_sampler_regressor_v3(X_in,Y_in,Z_in,param_dict):
 
     assert (train_len < nx), "Training length cannot be larger than total length"
 
-    data1= samples[0:nx/2,:]
-    data2 = samples[nx/2::,:]
+    I = np.random.choice(nx,nx,replace=False)
+    data1= samples[I[0:nx/2],:]
+    data2 = samples[I[nx/2:nx],:]
 
     netG = train_regressor(data1,dx,dy,dz, max_epoch=max_epoch, BSIZE=BSIZE,option = 1, normalized = normalized,DIM=DIM)
 
