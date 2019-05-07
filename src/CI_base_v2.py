@@ -24,7 +24,7 @@ from CCIT import *
 from sklearn.linear_model import LogisticRegressionCV
 from sklearn.neighbors import KNeighborsClassifier
 from sklearn.preprocessing import scale
-from src.classifier import *
+from src.classifier_v2 import *
 
 import xgboost as xgb 
 
@@ -38,7 +38,7 @@ np.random.seed(111)
 use_cuda = False
 CRITIC_ITERS = 5
 
-from src.utilities import *
+from src.utilities_v2 import *
 
 
 class CI_base_v2(object):

@@ -1,4 +1,6 @@
 #General Headers####################
+from __future__ import print_function
+
 import numpy as np
 import pandas as pd
 import random
@@ -28,9 +30,27 @@ def cube(x):
 def negexp(x):
     return np.exp(-np.abs(x))
 
+def gen_random_matrices(dx,dy,dz):
+    Ax = np.random.rand(dz,dx)
+    for i in range(dx):
+        Ax[:,i] = Ax[:,i]/np.linalg.norm(Ax[:,i],ord=1)
+    Ax = np.matrix(Ax)
+    Ay = np.random.rand(dz,dy)
+    for i in range(dy):
+        Ay[:,i] = Ay[:,i]/np.linalg.norm(Ay[:,i],ord=1)
+    Ay = np.matrix(Ay)
+    
+    Axy = np.random.rand(dx,dy)
+    for i in range(dy):
+        Axy[:,i] = Axy[:,i]/np.linalg.norm(Axy[:,i],ord=1)
+    Axy = np.matrix(Axy)
+
+    return Ax,Ay,Axy
 
 
-def generate_samples_random(size = 1000,sType = 'CI',dx = 1,dy = 1,dz = 20,nstd = 0.5,freq = 1.0, fixed_function = None,debug = False):
+
+def generate_samples_random(size = 1000,sType = 'CI',dx = 1,dy = 1,dz = 20,\
+    nstd = 0.5,freq = 1.0, fixed_function = None,debug = False,Ax = None,Ay=None,Axy=None,normalize=False):
     '''Generate CI,I or NI post-nonlinear samples
     1. Z is independent Gaussian 
     2. X = f1(<a,Z> + b + noise) and Y = f2(<c,Z> + d + noise) in case of CI
@@ -88,27 +108,30 @@ def generate_samples_random(size = 1000,sType = 'CI',dx = 1,dy = 1,dz = 20,nstd 
     else:
         f2 = np.cos
     if debug:   
-        print f1,f2
+        print(f1,f2)
 
+    if fixed_function == -1:
+        f1,f2 = np.cos,np.cos
+    else:    
+        Ax = np.random.rand(dz,dx)
+        for i in range(dx):
+            Ax[:,i] = Ax[:,i]/np.linalg.norm(Ax[:,i],ord=1)
+        Ax = np.matrix(Ax)
+        Ay = np.random.rand(dz,dy)
+        for i in range(dy):
+            Ay[:,i] = Ay[:,i]/np.linalg.norm(Ay[:,i],ord=1)
+        Ay = np.matrix(Ay)
+        
+        Axy = np.random.rand(dx,dy)
+        for i in range(dy):
+            Axy[:,i] = Axy[:,i]/np.linalg.norm(Axy[:,i],ord=1)
+        Axy = np.matrix(Axy)
+        
     num = size
     cov = np.eye(dz)
     mu = np.ones(dz)
     Z = np.random.multivariate_normal(mu,cov,num)
     Z = np.matrix(Z)
-    Ax = np.random.rand(dz,dx)
-    for i in range(dx):
-        Ax[:,i] = Ax[:,i]/np.linalg.norm(Ax[:,i],ord=1)
-    Ax = np.matrix(Ax)
-    Ay = np.random.rand(dz,dy)
-    for i in range(dy):
-        Ay[:,i] = Ay[:,i]/np.linalg.norm(Ay[:,i],ord=1)
-    Ay = np.matrix(Ay)
-    
-    Axy = np.random.rand(dx,dy)
-    for i in range(dy):
-        Axy[:,i] = Axy[:,i]/np.linalg.norm(Axy[:,i],ord=1)
-    Axy = np.matrix(Axy)
-    
     temp = Z*Ax
     m = np.mean(np.abs(temp))
     nstd = nstd*m
@@ -124,8 +147,15 @@ def generate_samples_random(size = 1000,sType = 'CI',dx = 1,dy = 1,dz = 20,nstd 
         Y = f2(freq*(2*X*Axy + Z*Ay + nstd*np.random.multivariate_normal(np.zeros(dy),np.eye(dy),num)))
         
     allsamples = np.hstack([X,Y,Z])
+    allsamples = np.array(allsamples)
+
+    if normalize:
+        mini = np.min(allsamples,axis=0)
+        maxi = np.max(allsamples,axis=0)
+        als = (allsamples - mini[None,:])/(maxi[None,:] - mini[None,:])
+        allsamples = als 
     
-    return np.array(allsamples)
+    return allsamples
 
 
 def random_helper(sims):
@@ -134,7 +164,9 @@ def random_helper(sims):
     '''
     np.random.seed()
     random.seed()
-    L = generate_samples_random(size=sims[0],sType=sims[1],dx=sims[2],dy=sims[3],dz=sims[4],nstd=sims[5],freq=sims[6],fixed_function=sims[9])
+    L = generate_samples_random(size=sims[0],sType=sims[1],dx=sims[2],dy=sims[3],dz=sims[4],nstd=sims[5],freq=sims[6],fixed_function=sims[9],\
+        normalize = sims[10],\
+        Ax=sims[11],Ay=sims[12],Axy=sims[13])
     s = sims[7] + str(sims[8])+'_'+ str(sims[4]) + '.csv'
     L = pd.DataFrame(L,columns = None)
     L.to_csv(s)
@@ -143,7 +175,7 @@ def random_helper(sims):
 #parallel_random_sample_gen(nsamples = 5000,dx = 1,dy = 1,dz = 50,nstd = 0.5,freq = 1,filetype = './data/dim50_random/datafile',num_data = 100, num_proc = 16)
 
 def parallel_random_sample_gen(nsamples = 1000,dx = 1,dy = 1,dz = 20,nstd = 0.5,freq = 1,\
-    filetype = '../data/dim20_random/datafile',num_data = 50, num_proc = 4,fixed_function=None):
+    filetype = '../data/dim20_random/datafile',num_data = 50, num_proc = 4,fixed_function=None,normalize=False):
     ''' 
     Function to create several many data-sets of post-nonlinear cos transform half of which are CI and half of which are NI, 
     along wtih the correct labels. The data-sets are stored under a given folder path. 
@@ -164,13 +196,17 @@ def parallel_random_sample_gen(nsamples = 1000,dx = 1,dy = 1,dz = 20,nstd = 0.5,
     datafile.npy files that constains an array that has the correct label. If the first label is '1' then  'datafile20_0.npy' constains a 'CI' dataset. '''
     inputs = []
     stypes = []
+    if fixed_function != -1:
+        Ax,Ay,Axy = None,None,None
+    else:
+        Ax,Ay,Axy = gen_random_matrices(dx,dy,dz)
     for i in range(num_data):
         x = np.random.binomial(1,0.5)
         if x > 0:
             sType = 'CI'
         else:
             sType = 'NI'
-        inputs = inputs + [(nsamples,sType,dx,dy,dz,nstd,freq,filetype,i,fixed_function)]
+        inputs = inputs + [(nsamples,sType,dx,dy,dz,nstd,freq,filetype,i,fixed_function,normalize,Ax,Ay,Axy)]
         stypes = stypes + [x]
     
     np.save(filetype+'.npy',stypes)

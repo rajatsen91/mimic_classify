@@ -43,7 +43,7 @@ use_cuda = False
 CRITIC_ITERS = 5
 FIXED_GENERATOR = False
 
-from src.utilities import *
+from src.utilities_v2 import *
 from src.CI_base_v2 import *
 
 
